@@ -174,44 +174,47 @@ export default function ArtistCreatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!jsonWebToken) return;
 
-    setIsLoading(true);
+    if (!jsonWebToken) {
+      toast.error("인증이 필요합니다.");
+      return;
+    }
 
-    try {
-      if (!isUpdateMode) {
-        if (!formData.account.trim()) {
-          toast.error("계정 ID를 입력해주세요.");
-          return;
-        }
-
-        if (!formData.password.trim()) {
-          toast.error("비밀번호를 입력해주세요.");
-          return;
-        }
-
-        if (
-          formData.account.trim().length < 4 ||
-          formData.account.trim().length > 20
-        ) {
-          toast.error("계정 ID는 4-20자 사이여야 합니다.");
-          return;
-        }
-
-        if (
-          formData.password.trim().length < 8 ||
-          formData.password.trim().length > 20
-        ) {
-          toast.error("비밀번호는 8-20자 사이여야 합니다.");
-          return;
-        }
-      }
-
-      if (!formData.nameKo.trim()) {
-        toast.error("한국어 이름을 입력해주세요.");
+    if (!isUpdateMode) {
+      if (!formData.account.trim()) {
+        toast.error("계정 ID를 입력해주세요.");
         return;
       }
 
+      if (!formData.password.trim()) {
+        toast.error("비밀번호를 입력해주세요.");
+        return;
+      }
+
+      if (
+        formData.account.trim().length < 4 ||
+        formData.account.trim().length > 20
+      ) {
+        toast.error("계정 ID는 4-20자 사이여야 합니다.");
+        return;
+      }
+
+      if (
+        formData.password.trim().length < 8 ||
+        formData.password.trim().length > 20
+      ) {
+        toast.error("비밀번호는 8-20자 사이여야 합니다.");
+        return;
+      }
+    }
+
+    if (!formData.nameKo.trim()) {
+      toast.error("한국어 이름을 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
       const requestData = {
         nameList: [
           {
@@ -229,15 +232,19 @@ export default function ArtistCreatePage() {
           }) as { name: string; imageOriginalPath: string }[],
       };
 
-      let result;
       if (isUpdateMode && artistId) {
-        result = await patchArtist({
+        const result = await patchArtist({
           id: artistId,
           body: requestData,
           jsonWebToken,
         });
+
+        if (!result) {
+          toast.error("아티스트 수정에 실패했습니다.");
+          return;
+        }
       } else {
-        result = await postArtist({
+        const result = await postArtist({
           body: {
             ...requestData,
             account: formData.account.trim(),
@@ -245,14 +252,22 @@ export default function ArtistCreatePage() {
           },
           jsonWebToken,
         });
+
+        if (!result.artist) {
+          toast.error(result.errorMessage);
+          return;
+        }
       }
 
-      if (result) {
-        router.replace("/dashboard/artists");
-      }
+      toast.success(
+        isUpdateMode
+          ? "아티스트가 성공적으로 수정되었습니다."
+          : "아티스트가 성공적으로 생성되었습니다."
+      );
+      router.replace("/dashboard/artists");
     } catch (error) {
       console.error("아티스트 저장 오류:", error);
-      alert("아티스트 저장 중 오류가 발생했습니다.");
+      toast.error("아티스트 저장 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
