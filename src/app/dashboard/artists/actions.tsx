@@ -54,6 +54,8 @@ export const postArtist = async ({
   jsonWebToken,
 }: {
   body: {
+    account: string;
+    password: string;
     nameList: {
       ko: string;
       en: string;

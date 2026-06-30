@@ -28,6 +28,8 @@ export default function ArtistCreatePage() {
   const jsonWebToken = useAuthStore((state) => state.token);
 
   const [formData, setFormData] = useState<ArtistFormData>({
+    account: "",
+    password: "",
     nameKo: "",
     nameEn: "",
   });
@@ -50,6 +52,8 @@ export default function ArtistCreatePage() {
 
           if (artistData) {
             setFormData({
+              account: artistData.account || "",
+              password: "",
               nameKo: artistData.nameList[0]?.ko || "",
               nameEn: artistData.nameList[0]?.en || "",
             });
@@ -78,7 +82,7 @@ export default function ArtistCreatePage() {
 
       fetchArtistData();
     }
-  }, [isUpdateMode, artistId]);
+  }, [isUpdateMode, artistId, jsonWebToken]);
   const handleInputChange = (field: keyof ArtistFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -175,11 +179,44 @@ export default function ArtistCreatePage() {
     setIsLoading(true);
 
     try {
+      if (!isUpdateMode) {
+        if (!formData.account.trim()) {
+          toast.error("계정 ID를 입력해주세요.");
+          return;
+        }
+
+        if (!formData.password.trim()) {
+          toast.error("비밀번호를 입력해주세요.");
+          return;
+        }
+
+        if (
+          formData.account.trim().length < 4 ||
+          formData.account.trim().length > 20
+        ) {
+          toast.error("계정 ID는 4-20자 사이여야 합니다.");
+          return;
+        }
+
+        if (
+          formData.password.trim().length < 8 ||
+          formData.password.trim().length > 20
+        ) {
+          toast.error("비밀번호는 8-20자 사이여야 합니다.");
+          return;
+        }
+      }
+
+      if (!formData.nameKo.trim()) {
+        toast.error("한국어 이름을 입력해주세요.");
+        return;
+      }
+
       const requestData = {
         nameList: [
           {
-            ko: formData.nameKo,
-            en: formData.nameEn,
+            ko: formData.nameKo.trim(),
+            en: formData.nameEn.trim(),
           },
         ] as [{ ko: string; en: string }],
         imageList: images
@@ -201,7 +238,11 @@ export default function ArtistCreatePage() {
         });
       } else {
         result = await postArtist({
-          body: requestData,
+          body: {
+            ...requestData,
+            account: formData.account.trim(),
+            password: formData.password.trim(),
+          },
           jsonWebToken,
         });
       }
@@ -286,6 +327,54 @@ export default function ArtistCreatePage() {
 
         <CardContent>
           <form id="artist-form" onSubmit={handleSubmit}>
+            {!isUpdateMode && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4">로그인 계정</h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="account" className="text-sm font-medium">
+                      계정 ID (4-20자) *
+                    </Label>
+                    <Input
+                      id="account"
+                      value={formData.account}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange("account", e.target.value)
+                      }
+                      placeholder="artist001"
+                      required
+                      minLength={4}
+                      maxLength={20}
+                      disabled={isLoading}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      아티스트가 로그인할 때 사용할 계정입니다.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="password" className="text-sm font-medium">
+                      비밀번호 (8-20자) *
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                      placeholder="password123"
+                      required
+                      minLength={8}
+                      maxLength={20}
+                      disabled={isLoading}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 제목 섹션 */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-4">이름</h3>

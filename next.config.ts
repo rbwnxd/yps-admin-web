@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,
   },
   images: {
-    domains: ["yps-storage.nxd-c.com"],
+    domains: ["storage.youngposse.kr"],
     formats: ["image/avif", "image/webp"],
   },
 };

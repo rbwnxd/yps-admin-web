@@ -30,6 +30,7 @@ export interface Announcement {
 
 export interface Artist {
   _id: string;
+  account?: string;
   nameList: [
     {
       ko: string;
@@ -536,6 +537,8 @@ export interface UploadedImage {
 
 // 아티스트 폼 데이터
 export interface ArtistFormData {
+  account: string;
+  password: string;
   nameKo: string;
   nameEn: string;
 }

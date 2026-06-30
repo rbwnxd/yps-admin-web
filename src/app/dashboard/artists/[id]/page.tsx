@@ -6,7 +6,7 @@ import { deleteArtist, getArtist } from "../actions";
 import { Artist } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { CalendarDays, ArrowLeft, Edit, Trash2, User } from "lucide-react";
 import moment from "moment";
 import Image from "next/image";
 import { STORAGE_URL } from "@/lib/api";
@@ -151,6 +151,12 @@ export default function ArtistDetailPage() {
                 <p className="text-lg text-muted-foreground mb-4">
                   {currentArtist.nameList[0].en}
                 </p>
+              )}
+              {currentArtist.account && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="w-4 h-4" />
+                  <span>계정: {currentArtist.account}</span>
+                </div>
               )}
             </div>
           </div>
